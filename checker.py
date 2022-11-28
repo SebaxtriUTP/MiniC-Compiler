@@ -74,6 +74,8 @@ class Checker(Visitor):
     Visitante que crea y enlaza tablas de simbolos al AST
     '''
     In_Loop = False
+    iteracion_actual = 0
+    condicion_parada = 0
 
 
     def _add_symbol(self, node, env: Symtab):
@@ -108,12 +110,6 @@ class Checker(Visitor):
 
     ###################
     # nodos de Declaration
-    def in_loop(self, node: Node, env: Symtab):
-        '''
-        1. Visitar el cuerpo del bucle
-        '''
-        self.In_Loop = False
-        self.visit(node.body, env)
 
     def visit(self, node: ClassDeclaration, env: Symtab):
         '''
@@ -190,12 +186,13 @@ class Checker(Visitor):
 
     def visit(self, node: ContinueStmt, env: Symtab):
         '''verificar que este drento del loop'''
-        print("Calli: ",self.In_Loop)
         if not self.In_Loop == True:
             self.error(node, f"Checker error, continue not inside loop")
 
     def visit(self, node: BreakStmt, env: Symtab):
-        pass
+        '''verificar que este drento del loop'''
+        if not self.In_Loop == True:
+            self.error(node, f"Checker error, break not inside loop")
 
     def visit(self, node: Print, env: Symtab):
         '''
@@ -222,18 +219,19 @@ class Checker(Visitor):
         2. Visitar las instrucciones del cuerpo
         Nota : ¿Generar un nuevo contexto?
         '''
-        print("While probador de loop", self.In_Loop)
-        self.In_Loop = True
+        self.In_Loop = True #poner en true para que continue y break funcionen
         self.visit(node.cond, env)
         env = Symtab(env) #?????
         self.visit(node.body, env)
-        self.In_Loop = False
+        self.In_Loop = False #cuando acaba el bucle, poner en false
 
     def visit(self, node: ForStmt, env: Symtab):
-        self.visit(node.for_init, env)
+        self.In_Loop = True
+        #self.visit(node.for_init, env) # tuve que quitar esto
         self.visit(node.for_cond, env)
         self.visit(node.for_increment, env)
         self.visit(node.for_body, env)
+        self.In_Loop = False
 
     def visit(self, node: Return, env: Symtab):
         '''

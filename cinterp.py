@@ -18,9 +18,14 @@ def _is_truthy(value):
 	else:
 		return True #if the object is not empty
 
+		
+
 class ReturnException(Exception):
 	def __init__(self, value):
 		self.value = value	#it sets the value for exception
+
+class ContinueException(Exception):
+	pass
 
 class BreakException(Exception):
 	pass
@@ -108,6 +113,8 @@ class Instance:
 class Excepcion:
 	pass 
 
+ThereIsBreak = False
+ThereIsContinue = False
 
 
 class Interpreter(Visitor): #This is a visitor
@@ -116,9 +123,15 @@ class Interpreter(Visitor): #This is a visitor
 		self.env  = ChainMap()			#generates ChainMap
 		self.check_env = ChainMap()
 		self.localmap = {}
+		self.loop_iterator = None
 		#self.env['print'] = print		#adds print to the environment
 		#self.env['input'] = input		#adds input to the environment
 
+	def new_label(self):
+		'''Generates a new jump label and returns it'''
+		label = ".L%d" % self.__label
+		self.__label += 1
+		return label
 
 	def _check_numeric_operands(self, node, left, right):
 		if isinstance(left, (int, float)) and isinstance(right, (int, float)):
@@ -156,6 +169,10 @@ class Interpreter(Visitor): #This is a visitor
 										#and then you have to reset the pointer
 		for stmt in node.stmts:
 			self.visit(stmt)
+			if ThereIsBreak:
+				return 0
+			if ThereIsContinue:
+				return 1
 			
 		#self.env = self.env.parents		#you "reset" the pointer
 
@@ -195,13 +212,54 @@ class Interpreter(Visitor): #This is a visitor
 		print(self.visit(node.expr))
 
 	def visit(self, node: WhileStmt):
+		global ThereIsContinue
+		global ThereIsBreak
+
 		while _is_truthy(self.visit(node.cond)):
-			self.visit(node.body)
+			ThereIsContinue = False
+			ThereIsBreak = False
+			#somethin will return from block 
+			flowControl = self.visit(node.body)
+			if flowControl == 0:
+				break
+			elif flowControl == 1:
+				continue
+			else:
+				pass
+			
+			#self.visit(node.body)
+		
+
+	def visit(self, node: ContinueStmt):
+		global ThereIsContinue
+		ThereIsContinue = True
+		#num_itecion = list(self.env.maps[0])
+		#self.env[num_itecion[0]] += 1
+		#return ContinueException()
+		
+
+	def visit(self, node: BreakStmt):
+		global ThereIsBreak
+		ThereIsBreak = True
+
 
 	def visit(self, node: ForStmt):
-		self.visit(node.for_init)
+		global ThereIsContinue
+		global ThereIsBreak
+	
 		while _is_truthy(self.visit(node.for_cond)):
-			self.visit(node.for_body)
+			ThereIsContinue = False
+			ThereIsBreak = False
+
+			flowControl = self.visit(node.for_body)
+			if flowControl == 0:
+				break
+			elif flowControl == 1:
+				self.visit(node.for_increment) #POFIN!!!! ESTO INCREMENTA EN la iteracion
+				continue
+			else:
+				pass
+			#self.visit(node.for_body)
 			self.visit(node.for_increment)
 
 	def visit(self, node: IfStmt):
@@ -213,15 +271,6 @@ class Interpreter(Visitor): #This is a visitor
 
 	def visit(self, node: Return):
 		raise ReturnException(self.visit(node.expr))
-
-	def visit(self, node: ContinueStmt):
-		ReturnException = 0
-		num_itecion = list(self.env.maps[0])
-		self.env[num_itecion[0]] += 1
-
-	def visit(self, node: BreakStmt):
-		return BreakException
-
 
 	def visit(self, node: ExprStmt):
 		self.visit(node.expr)
