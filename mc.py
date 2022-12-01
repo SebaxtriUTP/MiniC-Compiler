@@ -23,7 +23,7 @@ optional arguments:
 #import docopt
 
 #from argparse import ArgumentParser
-from context2 import Context
+from context import Context
 from rich import print
 from render import DotRender
 

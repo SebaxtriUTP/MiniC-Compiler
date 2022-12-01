@@ -90,7 +90,6 @@ class WhileStmt(Statement): #clase que representa un while
 
 @dataclass
 class ForStmt(Statement): #clase que representa un for
-    in_loop   : bool 
     for_init : Expression # inicializacion
     for_cond : Expression # condicion
     for_increment : Expression # incremento
@@ -219,3 +218,6 @@ class PreExp(Expression):
     name   : str
     expr   : Expression
 
+@dataclass
+class Format(Expression):
+    format : Expression

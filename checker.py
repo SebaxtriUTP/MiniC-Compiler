@@ -1,4 +1,5 @@
 from cast import *
+from funmath import *
 
 # ---------------------------------------------------------------------
 #  Tabla de Simbolos
@@ -38,6 +39,11 @@ class Symtab:
         simbolos padre dada.
         '''
         self.entries = {}
+
+        ############################################
+        for k, v in LibFuncs.items():
+            self.entries[k] = v
+
         self.parent = parent
         if self.parent:
             self.parent.children.append(self)

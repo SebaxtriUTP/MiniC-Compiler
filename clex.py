@@ -100,7 +100,11 @@ class Lexer(sly.Lexer):
         BREAK,
         CONTINUE,
 
+
+        PRINTF,
+
         #punto 5
+        
         MFUNC,
         CLOCK, 
         LEN, 
@@ -178,7 +182,8 @@ class Lexer(sly.Lexer):
     
 
     IDENT = r'[a-zA-Z_][a-zA-Z0-9_]*'
-    
+    #IDENT['format'] = FORMAT
+    IDENT['printf'] = PRINTF
     IDENT['break'] = BREAK
     IDENT['continue'] = CONTINUE
     IDENT['fun']    = FUN

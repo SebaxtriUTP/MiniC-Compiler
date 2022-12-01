@@ -58,7 +58,8 @@ class Parser(sly.Parser):
        "print_stmt",
        "return_stmt",
        "while_stmt",
-       "block")
+       "block",
+       "format_stmt")
     def statement(self, p):
         return p[0]
 
@@ -74,14 +75,15 @@ class Parser(sly.Parser):
             if not isinstance(body, Block):
                 body = Block([ body ])
 
-            body.stmts.append(ExprStmt(p.expression1))
-        body = WhileStmt(p.expression0 or Literal(True), body)
+        #              init, cond, inc, body
+        body = ForStmt(p.for_initialize,p.expression0,p.expression1,body)#
+        #body = WhileStmt(p.expression0 or Literal(True), body)
         body = Block([p.for_initialize, body])
         return body
 
     @_("FOR LPAREN SEMI [ expression ] SEMI [ expression ] RPAREN statement")
     def for_stmt(self, p):
-        body = p.statement
+        body = p.statement 
         if p.expression1:
             if not isinstance(body, Block):
                 body = Block([ body ])
@@ -212,6 +214,11 @@ class Parser(sly.Parser):
     def factor(self, p):
         print("FUNCION MATEMATICA")
         return MFUNC(p.name, p.expression)
+
+    @_("FORMAT LPAREN expression RPAREN SEMI")
+    def format_stmt(self, p):
+        print("entrooo...  FORMATO :D")
+        return Format(p.expression)
 
     @_("DOUBLE_PLUS expression",
        "DOUBLE_MINUS expression")

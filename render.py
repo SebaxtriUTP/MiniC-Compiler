@@ -74,6 +74,8 @@ class DotRender(Visitor):
     def visit(self, node : Program):
         name = self.name()
         self.dot.node(name, label="Program", color=self.color)
+        #visit LibFuncs
+            
         for d in node.decl:
             self.dot.edge(name, self.visit(d))
         return name

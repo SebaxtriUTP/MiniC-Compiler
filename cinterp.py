@@ -6,6 +6,7 @@ from collections import ChainMap
 from cast    import *
 from checker import Checker
 from rich    import print
+from funmath import *
 
 import math
 
@@ -178,6 +179,10 @@ class Interpreter(Visitor): #This is a visitor
 
 	def visit(self, node: Program):
 		#self.env = self.env.new_child()
+		#================================================================================================
+		for k, v in LibFuncs.items():
+			self.env[k] = v
+		#================================================================================================
 		for d in node.decl:
 			self.visit(d)
 		#self.env = self.env.parents
@@ -458,3 +463,6 @@ class Interpreter(Visitor): #This is a visitor
 		if not method:
 			self.error(node.object, f'Interp Error. Not defined property {node.name!r}')
 		return method.bind(this)
+
+	def visit(self, node: Format):
+		return 0
